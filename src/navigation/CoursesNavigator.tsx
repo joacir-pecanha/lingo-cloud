@@ -4,10 +4,15 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import CoursesScreen from '../screens/CoursesScreen';
 import CourseTrailScreen from '../screens/CourseTrailScreen';
 
+import ActiveLessonScreen from '../screens/ActiveLessonScreen';
+import LessonCompletedScreen from '../screens/LessonCompletedScreen';
+
 // ─── Tipos de rota ────────────────────────────────────────────────────────────
 export type CoursesStackParamList = {
   CoursesList: undefined;
   CourseTrail: { courseId: string };
+  ActiveLesson: { courseId: string; lessonId: string };
+  LessonCompleted: { courseId: string; lessonId: string; score: number; total: number; passed: boolean };
 };
 
 const Stack = createNativeStackNavigator<CoursesStackParamList>();
@@ -24,6 +29,8 @@ export function CoursesNavigator() {
     >
       <Stack.Screen name="CoursesList" component={CoursesScreen} />
       <Stack.Screen name="CourseTrail" component={CourseTrailScreen} />
+      <Stack.Screen name="ActiveLesson" component={ActiveLessonScreen} />
+      <Stack.Screen name="LessonCompleted" component={LessonCompletedScreen} options={{ presentation: 'fullScreenModal' }} />
     </Stack.Navigator>
   );
 }

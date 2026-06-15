@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { COURSES, Course, Lesson, Module } from '../data/courses';
@@ -137,6 +138,7 @@ interface ModuleSectionProps {
 }
 
 function ModuleSection({ module, moduleIndex, course, currentLessonId }: ModuleSectionProps) {
+  const navigation = useNavigation<NativeStackNavigationProp<CoursesStackParamList>>();
   const { isLessonCompleted, isLessonUnlocked, completeLesson } = useCourseProgress();
 
   const allCompleted = module.lessons.every((l) => isLessonCompleted(course.id, l.id));
@@ -152,26 +154,17 @@ function ModuleSection({ module, moduleIndex, course, currentLessonId }: ModuleS
         'Você já concluiu esta lição! Deseja revisá-la?',
         [
           { text: 'Cancelar', style: 'cancel' },
-          { text: 'Revisar', onPress: () => console.log(`[Revisar] ${lesson.id}`) },
+          { 
+            text: 'Revisar', 
+            onPress: () => navigation.navigate('ActiveLesson', { courseId: course.id, lessonId: lesson.id }) 
+          },
         ]
       );
       return;
     }
-    // status === 'current' — simula conclusão da lição
-    Alert.alert(
-      lesson.title,
-      `Deseja iniciar "${lesson.title}"?\n\nDuração: ${lesson.duration}`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Iniciar lição',
-          onPress: () => {
-            // Simula conclusão imediata para demonstrar o desbloqueio progressivo
-            completeLesson(course.id, lesson.id);
-          },
-        },
-      ]
-    );
+    
+    // Iniciar a lição
+    navigation.navigate('ActiveLesson', { courseId: course.id, lessonId: lesson.id });
   }
 
   return (
