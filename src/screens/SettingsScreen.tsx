@@ -11,8 +11,11 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
+import { SettingsStackParamList } from '../navigation/SettingsNavigator';
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
 const C = {
@@ -74,6 +77,7 @@ function SettingsItem({
 // ─── Tela Principal ───────────────────────────────────────────────────────────
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NativeStackNavigationProp<SettingsStackParamList>>();
   const { user, sendPasswordReset, logout } = useAuth();
 
   // Estados locais para os toggles
@@ -165,13 +169,13 @@ export default function SettingsScreen() {
           <SettingsItem
             icon="document-text"
             title="Termos de Serviço"
-            onPress={() => console.log('Abrir Termos')}
+            onPress={() => navigation.navigate('Terms')}
           />
           <View style={styles.divider} />
           <SettingsItem
             icon="shield-checkmark"
             title="Política de Privacidade"
-            onPress={() => console.log('Abrir Privacidade')}
+            onPress={() => navigation.navigate('Privacy')}
           />
         </View>
         
