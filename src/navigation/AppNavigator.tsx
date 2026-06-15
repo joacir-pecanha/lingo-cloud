@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { CoursesNavigator } from './CoursesNavigator';
-import SettingsScreen from '../screens/SettingsScreen';
+import { SettingsNavigator } from './SettingsNavigator';
 import { useAuth } from '../context/AuthContext';
 
 // ─── Paleta de cores ──────────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ export function AppNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Perfil" component={ProfileScreen} />
       <Tab.Screen name="Cursos" component={CoursesNavigator} />
-      <Tab.Screen name="Configurações" component={SettingsScreen} />
+      <Tab.Screen name="Configurações" component={SettingsNavigator} />
 
       {/* ── Aba Sair — interceptada via tabPress ─────────────────────────── */}
       <Tab.Screen
