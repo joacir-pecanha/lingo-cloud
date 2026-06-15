@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CoursesStackParamList } from '../navigation/CoursesNavigator';
 import { useCourseProgress } from '../context/CourseContext';
+import { useGamification } from '../context/GamificationContext';
 import { COURSES } from '../data/courses';
 
 // ─── Paleta ───────────────────────────────────────────────────────────────────
@@ -35,15 +36,17 @@ export default function LessonCompletedScreen() {
   const { courseId, lessonId, score, total, passed } = route.params;
 
   const { completeLesson } = useCourseProgress();
+  const { addXP } = useGamification();
   const course = COURSES.find((c) => c.id === courseId);
   const color = course?.color ?? C.primary;
 
   useEffect(() => {
-    // Se passou, marca como concluído no contexto
+    // Se passou, marca como concluído no contexto e dá XP
     if (passed) {
       completeLesson(courseId, lessonId);
+      addXP(20); // Recompensa padrão
     }
-  }, [passed, courseId, lessonId, completeLesson]);
+  }, [passed, courseId, lessonId, completeLesson, addXP]);
 
   const percentage = Math.round((score / total) * 100);
 
@@ -90,6 +93,13 @@ export default function LessonCompletedScreen() {
           </Text>
           <Text style={styles.scorePct}>{percentage}% de acertos</Text>
         </View>
+
+        {passed && (
+          <View style={styles.xpBadge}>
+            <Ionicons name="star" size={18} color="#FFD700" />
+            <Text style={styles.xpText}>+20 XP</Text>
+          </View>
+        )}
 
       </View>
 
@@ -189,6 +199,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: C.muted,
     fontWeight: '600',
+  },
+
+  xpBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 24,
+    backgroundColor: '#FFD70022',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#FFD70066',
+  },
+  xpText: {
+    color: '#FFD700',
+    fontSize: 18,
+    fontWeight: '900',
   },
 
   footer: {
