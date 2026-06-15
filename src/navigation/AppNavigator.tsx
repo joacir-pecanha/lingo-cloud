@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
-import CoursesScreen from '../screens/CoursesScreen';
+import { CoursesNavigator } from './CoursesNavigator';
 import SettingsScreen from '../screens/SettingsScreen';
 import { useAuth } from '../context/AuthContext';
 
@@ -114,7 +114,7 @@ export function AppNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Perfil" component={ProfileScreen} />
-      <Tab.Screen name="Cursos" component={CoursesScreen} />
+      <Tab.Screen name="Cursos" component={CoursesNavigator} />
       <Tab.Screen name="Configurações" component={SettingsScreen} />
 
       {/* ── Aba Sair — interceptada via tabPress ─────────────────────────── */}
