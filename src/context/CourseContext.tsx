@@ -8,9 +8,19 @@ import React, {
 import { Course, getLessonGlobalIndex } from '../data/courses';
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────
+interface LessonHistoryEntry {
+  courseId: string;
+  lessonId: string;
+  score: number;
+  total: number;
+  timestamp: string;
+}
+
 interface CourseProgressState {
   /** IDs das lições concluídas, indexado por courseId */
   completedLessons: Record<string, Set<string>>;
+  /** Histórico completo das lições */
+  history: LessonHistoryEntry[];
 }
 
 interface CourseContextValue {
@@ -25,8 +35,8 @@ interface CourseContextValue {
    */
   isLessonUnlocked: (course: Course, lessonId: string) => boolean;
 
-  /** Marca a lição como concluída */
-  completeLesson: (courseId: string, lessonId: string) => void;
+  /** Marca a lição como concluída e registra no histórico */
+  completeLesson: (courseId: string, lessonId: string, score?: number, total?: number) => void;
 
   /** Quantidade de lições concluídas no curso */
   completedCount: (courseId: string) => number;
@@ -36,6 +46,9 @@ interface CourseContextValue {
 
   /** Retorna o ID da primeira lição não concluída (lição atual) */
   currentLessonId: (course: Course) => string | null;
+
+  /** Retorna o histórico de lições concluídas */
+  lessonHistory: LessonHistoryEntry[];
 }
 
 // ─── Contexto ─────────────────────────────────────────────────────────────────
@@ -45,6 +58,7 @@ const CourseContext = createContext<CourseContextValue | undefined>(undefined);
 export function CourseProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<CourseProgressState>({
     completedLessons: {},
+    history: [],
   });
 
   const isLessonCompleted = useCallback(
@@ -64,15 +78,26 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     [isLessonCompleted]
   );
 
-  const completeLesson = useCallback((courseId: string, lessonId: string) => {
+  const completeLesson = useCallback((courseId: string, lessonId: string, score: number = 0, total: number = 0) => {
     setState((prev) => {
       const existing = new Set(prev.completedLessons[courseId] ?? []);
       existing.add(lessonId);
+      
+      const newHistoryEntry: LessonHistoryEntry = {
+        courseId,
+        lessonId,
+        score,
+        total,
+        timestamp: new Date().toISOString(),
+      };
+
       return {
+        ...prev,
         completedLessons: {
           ...prev.completedLessons,
           [courseId]: existing,
         },
+        history: [newHistoryEntry, ...prev.history],
       };
     });
   }, []);
@@ -111,6 +136,7 @@ export function CourseProvider({ children }: { children: ReactNode }) {
         completedCount,
         progressRatio,
         currentLessonId,
+        lessonHistory: state.history,
       }}
     >
       {children}

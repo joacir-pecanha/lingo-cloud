@@ -43,10 +43,10 @@ export default function LessonCompletedScreen() {
   useEffect(() => {
     // Se passou, marca como concluído no contexto e dá XP
     if (passed) {
-      completeLesson(courseId, lessonId);
+      completeLesson(courseId, lessonId, score, total);
       addXP(20); // Recompensa padrão
     }
-  }, [passed, courseId, lessonId, completeLesson, addXP]);
+  }, [passed, courseId, lessonId, score, total, completeLesson, addXP]);
 
   const percentage = Math.round((score / total) * 100);
 

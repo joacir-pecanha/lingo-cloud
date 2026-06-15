@@ -3,6 +3,8 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 // ─── Tipos ────────────────────────────────────────────────────────────────────
 export interface User {
   email: string;
+  name: string;
+  avatar: string;
 }
 
 interface AuthState {
@@ -15,12 +17,15 @@ interface AuthContextValue extends AuthState {
   register: (email: string, password: string) => Promise<void>;
   logout: () => void;
   sendPasswordReset: (email: string) => Promise<void>;
+  updateProfile: (name: string, avatar: string) => void;
 }
 
 // ─── Banco de dados em memória (substituir por chamada real à API) ────────────
 interface StoredUser {
   email: string;
   password: string;
+  name: string;
+  avatar: string;
 }
 
 const userStore: StoredUser[] = [];
@@ -49,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Email ou senha inválidos. Verifique suas credenciais.');
     }
 
-    setUser({ email: found.email });
+    setUser({ email: found.email, name: found.name, avatar: found.avatar });
   }, []);
 
   /**
@@ -67,8 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error('Este email já está cadastrado. Tente fazer login.');
     }
 
-    userStore.push({ email, password });
-    setUser({ email });
+    userStore.push({ email, password, name: 'Estudante', avatar: 'person' });
+    setUser({ email, name: 'Estudante', avatar: 'person' });
   }, []);
 
   /** logout — limpa a sessão do usuário */
@@ -87,6 +92,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log(`[Auth] Link de redefinição enviado para: ${email}`);
   }, []);
 
+  const updateProfile = useCallback((name: string, avatar: string) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      
+      // Update in store as well
+      const storeUser = userStore.find(u => u.email === prev.email);
+      if (storeUser) {
+        storeUser.name = name;
+        storeUser.avatar = avatar;
+      }
+      
+      return { ...prev, name, avatar };
+    });
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -96,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         sendPasswordReset,
+        updateProfile,
       }}
     >
       {children}
