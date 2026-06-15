@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Alert, Platform } from 'react-native';
+import { Alert } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,7 +8,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import CoursesScreen from '../screens/CoursesScreen';
 import SettingsScreen from '../screens/SettingsScreen';
-import LoginScreen from '../screens/LoginScreen';
+import { useAuth } from '../context/AuthContext';
 
 // ─── Paleta de cores ──────────────────────────────────────────────────────────
 const COLORS = {
@@ -56,12 +56,13 @@ const TAB_ICONS: Record<keyof RootTabParamList, { focused: IoniconName; default:
 // ─── Componente principal ─────────────────────────────────────────────────────
 export function AppNavigator() {
   const insets = useSafeAreaInsets();
+  const { logout } = useAuth();
 
   /**
-   * handleLogout — futuramente:
-   *  1. Limpar o token de sessão (AsyncStorage / SecureStore)
-   *  2. Resetar o estado de autenticação
-   *  3. navigation.reset({ index: 0, routes: [{ name: 'Login' }] })
+   * handleLogout:
+   *  1. Exibe confirmação
+   *  2. Chama logout() do AuthContext — limpa a sessão
+   *  3. RootNavigator detecta isAuthenticated = false e exibe AuthNavigator
    */
   const handleLogout = useCallback(() => {
     Alert.alert(
@@ -72,15 +73,12 @@ export function AppNavigator() {
         {
           text: 'Sair',
           style: 'destructive',
-          onPress: () => {
-            // TODO: limpar token e redirecionar para Login
-            console.log('[Auth] Sessão encerrada — redirecionar para Login');
-          },
+          onPress: logout,
         },
       ],
       { cancelable: true }
     );
-  }, []);
+  }, [logout]);
 
   return (
     <Tab.Navigator

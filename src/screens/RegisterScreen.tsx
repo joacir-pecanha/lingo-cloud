@@ -20,15 +20,23 @@ function validateEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
+function validatePassword(password: string) {
+  // Mínimo 6 caracteres
+  return password.length >= 6;
+}
+
 // ─── Componente ───────────────────────────────────────────────────────────────
-export default function LoginScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList, 'Login'>>();
-  const { login } = useAuth();
+export default function RegisterScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList, 'Register'>>();
+  const { register } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [confirmError, setConfirmError] = useState('');
   const [globalError, setGlobalError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -37,18 +45,30 @@ export default function LoginScreen() {
     let valid = true;
     setEmailError('');
     setPasswordError('');
+    setConfirmError('');
     setGlobalError('');
 
     if (!email.trim()) {
       setEmailError('Informe seu email.');
       valid = false;
     } else if (!validateEmail(email)) {
-      setEmailError('Email inválido.');
+      setEmailError('Digite um email válido.');
       valid = false;
     }
 
     if (!password) {
-      setPasswordError('Informe sua senha.');
+      setPasswordError('Informe uma senha.');
+      valid = false;
+    } else if (!validatePassword(password)) {
+      setPasswordError('A senha deve ter no mínimo 6 caracteres.');
+      valid = false;
+    }
+
+    if (!confirmPassword) {
+      setConfirmError('Confirme sua senha.');
+      valid = false;
+    } else if (password !== confirmPassword) {
+      setConfirmError('As senhas não coincidem.');
       valid = false;
     }
 
@@ -56,14 +76,14 @@ export default function LoginScreen() {
   }
 
   // ── Submit ─────────────────────────────────────────────────────────────────
-  async function handleLogin() {
+  async function handleRegister() {
     if (!validate()) return;
     setLoading(true);
     try {
-      await login(email.trim(), password);
-      // O AuthContext atualiza isAuthenticated → RootNavigator redireciona automaticamente
+      await register(email.trim(), password);
+      // AuthContext atualiza isAuthenticated → RootNavigator redireciona automaticamente
     } catch (err: any) {
-      setGlobalError(err?.message ?? 'Ocorreu um erro. Tente novamente.');
+      setGlobalError(err?.message ?? 'Erro ao criar conta. Tente novamente.');
     } finally {
       setLoading(false);
     }
@@ -81,19 +101,20 @@ export default function LoginScreen() {
       >
         {/* Cabeçalho */}
         <View style={styles.header}>
-          <Text style={styles.brand}>lingo</Text>
-          <Text style={styles.brandAccent}>cloud</Text>
-          <Text style={styles.subtitle}>Entre na sua conta</Text>
+          <Text style={styles.title}>Criar conta</Text>
+          <Text style={styles.subtitle}>
+            Junte-se à maior plataforma de aprendizado
+          </Text>
         </View>
 
-        {/* Alerta global de erro */}
+        {/* Alerta global — ex: email já cadastrado */}
         {!!globalError && <InlineAlert message={globalError} type="error" />}
 
         {/* Formulário */}
         <AuthInput
           label="Email"
           value={email}
-          onChangeText={(t) => { setEmail(t); setGlobalError(''); setEmailError(''); }}
+          onChangeText={(t) => { setEmail(t); setEmailError(''); setGlobalError(''); }}
           placeholder="seu@email.com"
           keyboardType="email-address"
           iconName="mail-outline"
@@ -104,35 +125,38 @@ export default function LoginScreen() {
         <AuthInput
           label="Senha"
           value={password}
-          onChangeText={(t) => { setPassword(t); setGlobalError(''); setPasswordError(''); }}
-          placeholder="••••••••"
+          onChangeText={(t) => { setPassword(t); setPasswordError(''); }}
+          placeholder="Mínimo 6 caracteres"
           isPassword
           iconName="lock-closed-outline"
           error={passwordError}
-          returnKeyType="done"
-          onSubmitEditing={handleLogin}
+          returnKeyType="next"
         />
 
-        {/* Esqueci a senha */}
-        <TouchableOpacity
-          style={styles.forgotBtn}
-          onPress={() => navigation.navigate('ForgotPassword')}
-        >
-          <Text style={styles.forgotText}>Esqueci minha senha</Text>
-        </TouchableOpacity>
+        <AuthInput
+          label="Confirmar senha"
+          value={confirmPassword}
+          onChangeText={(t) => { setConfirmPassword(t); setConfirmError(''); }}
+          placeholder="Repita a senha"
+          isPassword
+          iconName="shield-checkmark-outline"
+          error={confirmError}
+          returnKeyType="done"
+          onSubmitEditing={handleRegister}
+        />
 
-        {/* Botão principal */}
+        {/* Botão */}
         <PrimaryButton
-          label="Entrar"
-          onPress={handleLogin}
+          label="Criar conta"
+          onPress={handleRegister}
           loading={loading}
         />
 
         {/* Rodapé */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Não tem uma conta? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.footerLink}>Cadastre-se</Text>
+          <Text style={styles.footerText}>Já tem uma conta? </Text>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.footerLink}>Entrar</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -149,30 +173,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingVertical: 48,
   },
-  header: { alignItems: 'center', marginBottom: 40 },
-  brand: {
-    fontSize: 40,
+  header: { marginBottom: 36 },
+  title: {
+    fontSize: 32,
     fontWeight: '900',
     color: COLORS.white,
-    letterSpacing: -1,
-    includeFontPadding: false,
-  },
-  brandAccent: {
-    fontSize: 40,
-    fontWeight: '900',
-    color: COLORS.primary,
-    letterSpacing: -1,
-    marginTop: -8,
-    includeFontPadding: false,
+    letterSpacing: -0.5,
+    marginBottom: 6,
   },
   subtitle: {
     color: COLORS.muted,
-    fontSize: 15,
-    marginTop: 10,
-    letterSpacing: 0.2,
+    fontSize: 14,
+    lineHeight: 20,
   },
-  forgotBtn: { alignSelf: 'flex-end', marginBottom: 20, marginTop: -4 },
-  forgotText: { color: COLORS.primaryLight, fontSize: 13, fontWeight: '600' },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
